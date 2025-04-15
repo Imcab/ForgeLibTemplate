@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -57,10 +56,6 @@ public final class RobotState extends SubsystemBase implements RobotLifeCycle{
 
         isAuto.sendBoolean(DriverStation.isAutonomous());
         isAutoDisabled.sendBoolean(!DriverStation.isAutonomousEnabled());
-    }
-
-    public Pose2d robotPosition(){
-        return NTPublisher.retrieve("NetworkSwerve", "Odometry/BotPose2D", Pose2d.kZero);
     }
 
     @Override

@@ -6,7 +6,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -61,6 +63,9 @@ public class PoseFinder implements Sendable{
         this.constraints = finderConstraints;
         this.currentState = false;
         this.errorTolerance = errorTolerance;
+
+        PathfindingCommand.warmupCommand().schedule();
+
     }
 
     @Override
@@ -165,6 +170,30 @@ public class PoseFinder implements Sendable{
         return pathFind;
 
 
+    }
+
+    /**
+     * Generates a command to follow a path defined in a PathPlanner file.
+     *
+     * @param pathName The name of the path file.
+     * @return A command that follows the specified path.
+     */
+    public Command toPathPlannerPath(String pathName){
+        try{
+
+            Command pathFind = AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile(pathName), constraints).
+            beforeStarting(()-> {
+                this.currentState = true;
+            }, swerveSub).onlyWhile(()-> !atGoal()).finallyDo(()-> {
+                this.currentState = false;
+                stopHolonomic();
+            });
+
+            return pathFind;
+        } catch (Exception e){
+            System.out.println("Path not found: " + pathName);
+            return Commands.none();
+        }
     }
 
     /**
